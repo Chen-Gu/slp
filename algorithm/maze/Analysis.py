@@ -13,6 +13,7 @@ class Analyzer(AnalyzerCommon):
 
 			('Captured', 'ReceiveRatio'),
 			(('Sent', 'TimeTaken'), 'ReceiveRatio'),
+			('average_duty_cycle', '1'),
 		)
 
 	def results_header(self):
@@ -37,5 +38,6 @@ class Analyzer(AnalyzerCommon):
 
 		d['norm(sent,time taken)']   = lambda x: self._format_results(x, 'norm(Sent,TimeTaken)')
 		d['norm(norm(sent,time taken),num_nodes)']   = lambda x: self._format_results(x, 'norm(norm(Sent,TimeTaken),num_nodes)')
+		d['average duty cycle']   = lambda x: self._format_results(x, 'norm(average_duty_cycle,1)')
 
 		return d

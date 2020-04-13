@@ -86,6 +86,12 @@ module SourceBroadcasterC
 	uses interface Random;
 
 	uses interface LocalTime<TMilli>;
+
+#ifdef LOW_POWER_LISTENING
+	uses interface LowPowerListening;
+
+	uses interface Timer<TMilli> as StartDutyCycleTimer;
+#endif
 }
 
 implementation 
@@ -231,6 +237,11 @@ implementation
 		call NodeType.register_pair(SinkNode, "SinkNode");
 		call NodeType.register_pair(NormalNode, "NormalNode");
 
+#ifdef LOW_POWER_LISTENING
+		// All nodes should listen continuously during setup phase
+		call LowPowerListening.setLocalWakeupInterval(0);
+#endif
+
 		if (call NodeType.is_node_sink())
 		{
 			call NodeType.init(SinkNode);
@@ -252,6 +263,13 @@ implementation
 			LOG_STDOUT_VERBOSE(EVENT_RADIO_ON, "radio on\n");
 
 			call ObjectDetector.start_later(SLP_OBJECT_DETECTOR_START_DELAY_MS);
+
+#ifdef LOW_POWER_LISTENING
+			if (call NodeType.get() != SinkNode)
+			{
+				call StartDutyCycleTimer.startOneShot(SLP_OBJECT_DETECTOR_START_DELAY_MS);
+			}
+#endif
 		}
 		else
 		{
@@ -276,6 +294,8 @@ implementation
 			LOG_STDOUT(EVENT_OBJECT_DETECTED, "An object has been detected\n");
 
 			call SourcePeriodModel.startPeriodic();
+
+			METRIC_GENERIC(METRIC_GENERIC_DUTY_CYCLE_START, "");
 		}
 	}
 
@@ -290,6 +310,16 @@ implementation
 			call NodeType.set(NormalNode);
 		}
 	}
+
+#ifdef LOW_POWER_LISTENING
+	event void StartDutyCycleTimer.fired()
+	{
+		// The sink does not do duty cycling and keeps its radio on at all times
+		assert(call NodeType.get() != SinkNode);
+		
+		call LowPowerListening.setLocalWakeupInterval(LPL_DEF_LOCAL_WAKEUP);
+	}
+#endif
 
 	event void SourcePeriodModel.fired()
 	{

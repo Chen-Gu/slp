@@ -8,8 +8,8 @@ approaches = ("SINK_SRC", "SRC_SINK", "SINK_SRC_SINK", "SRC_SINK_SRC")
 restricted_sleep = ("ALL_SLEEP", "NO_FAR_SLEEP")
 
 class Arguments(ArgumentsCommon):
-    def __init__(self):
-        super().__init__("SLP Quiet Nodes", has_safety_period=True, has_safety_factor=True)
+    def __init__(self, **kwargs):
+        super().__init__("SLP Quiet Nodes", has_safety_period=True, has_safety_factor=True, **kwargs)
 
         self.add_argument("--source-period",
                           type=simulator.SourcePeriodModel.eval_input, required=True)
